@@ -315,6 +315,7 @@ const ProductsTab = () => {
 const OrdersTab = () => {
   const { data: orders, isLoading } = useAdminOrders();
   const queryClient = useQueryClient();
+  const [paymentFilter, setPaymentFilter] = useState('all');
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -383,16 +384,59 @@ const OrdersTab = () => {
     return <ShoppingBag className="h-4 w-4" />;
   };
 
+  const filteredOrders = (orders ?? []).filter((o: any) => 
+    paymentFilter === 'all' ? true : (o.payment_status || 'pending') === paymentFilter
+  );
+
+  const totalRevenue = filteredOrders.reduce((acc: number, order: any) => acc + (order.total || 0), 0);
+  const totalGST = totalRevenue - (totalRevenue / 1.18);
+
   return (
     <div>
-      <h2 className="font-display text-xl font-bold text-foreground">Orders</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h2 className="font-display text-xl font-bold text-foreground">Orders</h2>
+        <div className="flex gap-4 items-center">
+          <Label className="text-sm font-medium whitespace-nowrap">Filter Payment:</Label>
+          <select 
+            value={paymentFilter} 
+            onChange={(e) => setPaymentFilter(e.target.value)}
+            className="rounded-md border bg-background px-3 py-1.5 text-sm w-36"
+          >
+            <option value="all">All Orders</option>
+            <option value="paid">Paid/Completed</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-sm text-muted-foreground font-medium">Orders Count</p>
+          <p className="font-display text-2xl font-bold mt-1">{filteredOrders.length}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-sm text-muted-foreground font-medium">Filtered Revenue</p>
+          <p className="font-display text-2xl font-bold mt-1 text-green-600">₹{totalRevenue.toFixed(2)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-sm text-muted-foreground font-medium">Est. Taxable Value</p>
+          <p className="font-display text-2xl font-bold mt-1 text-blue-600">₹{(totalRevenue / 1.18).toFixed(2)}</p>
+        </div>
+        <div className="rounded-xl border bg-card p-4">
+          <p className="text-sm text-muted-foreground font-medium">Est. GST (18%)</p>
+          <p className="font-display text-2xl font-bold mt-1 text-purple-600">₹{totalGST.toFixed(2)}</p>
+        </div>
+      </div>
+
       <div className="mt-6 space-y-4">
         {isLoading ? (
           <div className="animate-pulse h-20 rounded-lg bg-muted" />
-        ) : (orders ?? []).length === 0 ? (
-          <p className="text-muted-foreground">No orders yet.</p>
+        ) : filteredOrders.length === 0 ? (
+          <p className="text-muted-foreground">No orders found.</p>
         ) : (
-          (orders ?? []).map((order: any) => (
+          filteredOrders.map((order: any) => (
             <div key={order._id || order.id} className="rounded-lg border bg-card p-5">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>

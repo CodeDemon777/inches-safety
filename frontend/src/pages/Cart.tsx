@@ -145,7 +145,8 @@ const Cart = () => {
         product_id: item.id,
         product_name: item.name,
         price: item.price,
-        quantity: item.quantity
+        quantity: item.quantity,
+        image_url: item.image
       }));
 
       await apiFetch('/orders', {

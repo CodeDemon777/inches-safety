@@ -2,6 +2,7 @@ import express from 'express';
 import Order from '../models/Order.js';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
 import nodemailer from 'nodemailer';
+import { generateInvoicePDF } from '../utils/pdfGenerator.js';
 
 const router = express.Router();
 
@@ -15,12 +16,31 @@ const transporter = nodemailer.createTransport({
 
 const sendOrderEmail = async (order, subject, message) => {
   try {
-    await transporter.sendMail({
+    let pdfBuffer = null;
+    try {
+        pdfBuffer = await generateInvoicePDF(order);
+    } catch(e) {
+        console.error("Failed to generate PDF for email:", e);
+    }
+
+    const mailOptions = {
       from: '"Inches Eco Store" <inches.safety@gmail.com>',
       to: order.email,
       subject: subject,
       text: `${message}\n\nOrder Details:\nOrder ID: ${order._id}\nTotal: ₹${order.total}\nStatus: ${order.status}`,
-    });
+    };
+
+    if (pdfBuffer) {
+        mailOptions.attachments = [
+           {
+              filename: `INV-${order._id.toString().slice(-6).toUpperCase()}.pdf`,
+              content: pdfBuffer,
+              contentType: 'application/pdf'
+           }
+        ];
+    }
+
+    await transporter.sendMail(mailOptions);
     console.log(`Email sent to ${order.email}`);
   } catch (err) {
     console.error('Email error:', err);
