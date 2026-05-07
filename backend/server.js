@@ -22,7 +22,10 @@ const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: false })); // allow static images if needed
 app.use(cors({
-    origin: process.env.NODE_ENV === 'production' ? 'https://inches.gl' : 'http://localhost:8080',
+    origin: [
+        "https://inches-safety.vercel.app",
+        "https://inches.gl"
+    ],
     credentials: true
 }));
 
