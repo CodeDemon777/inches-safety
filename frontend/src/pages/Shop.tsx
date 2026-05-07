@@ -34,7 +34,7 @@ const Shop = () => {
                 activeSaleType === t ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
-              {t} Shop
+              {t === 'Normal' ? 'Retail' : t} Shop
             </button>
           ))}
         </div>

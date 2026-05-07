@@ -238,7 +238,7 @@ const ProductsTab = () => {
               <div>
                 <Label>Sale Type</Label>
                 <select value={form.sale_type} onChange={(e) => setForm({ ...form, sale_type: e.target.value })} className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm">
-                  <option>Normal</option><option>Wholesale</option><option>Both</option>
+                  <option value="Normal">Retail</option><option>Wholesale</option><option>Both</option>
                 </select>
               </div>
             </div>
@@ -293,7 +293,7 @@ const ProductsTab = () => {
                 )}
                 <div>
                   <h4 className="font-medium text-foreground">{p.name}</h4>
-                  <p className="text-sm text-muted-foreground">{p.category} · {p.sale_type} · ₹{p.price} {p.original_price ? `(was ₹${p.original_price})` : ''} · Stock: {p.stock} {!p.is_active && '· Inactive'}</p>
+                  <p className="text-sm text-muted-foreground">{p.category} · {p.sale_type === 'Normal' ? 'Retail' : p.sale_type} · ₹{p.price} {p.original_price ? `(was ₹${p.original_price})` : ''} · Stock: {p.stock} {!p.is_active && '· Inactive'}</p>
                 </div>
               </div>
               <div className="flex gap-2">
