@@ -46,33 +46,38 @@ const Cart = () => {
   };
 
   const generateBillPDF = () => {
-    const doc = new jsPDF();
-    
-    doc.setFontSize(20);
-    doc.text('EcoCycle Store - Invoice', 14, 20);
-    
-    doc.setFontSize(12);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
-    doc.text(`Name: ${form.full_name}`, 14, 40);
-    doc.text(`Phone: ${form.phone}`, 14, 48);
-    doc.text(`Transaction ID: ${transactionId}`, 14, 56);
-    
-    const tableData = items.map(item => [
-      item.name,
-      item.quantity.toString(),
-      `Rs. ${item.price}`,
-      `Rs. ${item.price * item.quantity}`
-    ]);
-    
-    autoTable(doc, {
-      startY: 65,
-      head: [['Product', 'Quantity', 'Price', 'Total']],
-      body: tableData,
-      foot: [['', '', 'Grand Total:', `Rs. ${totalPrice()}`]],
-      theme: 'grid'
-    });
-    
-    doc.save(`Invoice_${transactionId || 'Order'}.pdf`);
+    try {
+      const doc = new jsPDF();
+      
+      doc.setFontSize(20);
+      doc.text('EcoCycle Store - Invoice', 14, 20);
+      
+      doc.setFontSize(12);
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, 14, 30);
+      doc.text(`Name: ${form.full_name || ''}`, 14, 40);
+      doc.text(`Phone: ${form.phone || ''}`, 14, 48);
+      doc.text(`Transaction ID: ${transactionId || ''}`, 14, 56);
+      
+      const tableData = items.map(item => [
+        item.name || '',
+        (item.quantity || 1).toString(),
+        `Rs. ${item.price || 0}`,
+        `Rs. ${(item.price || 0) * (item.quantity || 1)}`
+      ]);
+      
+      autoTable(doc, {
+        startY: 65,
+        head: [['Product', 'Quantity', 'Price', 'Total']],
+        body: tableData,
+        foot: [['', '', 'Grand Total:', `Rs. ${totalPrice()}`]],
+        theme: 'grid'
+      });
+      
+      doc.save(`Invoice_${transactionId || 'Order'}.pdf`);
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      toast.error('Order placed, but failed to download PDF invoice.');
+    }
   };
 
   const getUpiUrl = () => {
@@ -107,27 +112,7 @@ const Cart = () => {
     window.open(`https://wa.me/+917092264632?text=${encoded}`, '_blank');
   };
 
-  const sendToWhatsApp = () => {
-    if (!form.full_name || !form.phone || !form.address_line1) {
-      toast.error('Please fill in your Name, Phone, and Address to order via WhatsApp.');
-      return;
-    }
 
-    if (!transactionId) {
-      toast.error('Please enter the Transaction ID after paying via QR Code to proceed.');
-      return;
-    }
-
-    generateBillPDF();
-
-    const productList = items.map((i) => `${i.name} (x${i.quantity})`).join(', ');
-    const fullAddress = `${form.address_line1}, ${form.address_line2 ? form.address_line2 + ', ' : ''}${form.city}, ${form.state} - ${form.pincode}`;
-    
-    const message = `🛒 *New Order - Inches Eco Pads*\n\n📦 *Product:* ${productList}\n💰 *Total Paid:* ₹${totalPrice()}\n💳 *Transaction ID:* ${transactionId}\n\n👤 *Name:* ${form.full_name}\n📞 *Phone:* ${form.phone}\n📍 *Address:* ${fullAddress}\n📝 *Notes:* ${form.notes || 'None'}`;
-    
-    const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/+917092264632?text=${encoded}`, '_blank');
-  };
 
   const downloadQR = () => {
     const canvas = document.getElementById('payment-qr') as HTMLCanvasElement;
@@ -165,6 +150,7 @@ const Cart = () => {
         method: 'POST',
         body: JSON.stringify({
           ...form,
+          payment_id: transactionId,
           transaction_id: transactionId,
           total: totalPrice(),
           items: orderItems
@@ -319,12 +305,7 @@ const Cart = () => {
                     </svg>
                     Pay via WhatsApp
                   </Button>
-                  <Button type="button" onClick={sendToWhatsApp} className="w-full flex items-center justify-center gap-2 rounded-full bg-[#25D366] text-white hover:bg-[#20bd5a]">
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
-                    </svg>
-                    Send to WhatsApp
-                  </Button>
+
                   <Button type="submit" form="checkout-form" disabled={placing} variant="outline" className="w-full rounded-full">
                     {placing ? 'Placing Order...' : 'Place Order without WhatsApp'}
                   </Button>
