@@ -4,11 +4,11 @@ import ProductCard from '@/components/ProductCard';
 import { useProducts } from '@/hooks/useProducts';
 import { useState } from 'react';
 
-const categories = ['All', 'Regular', 'XL', 'Night'] as const;
+const categories = ['XL', 'XXL'] as const;
 const saleTypes = ['Normal', 'Wholesale'] as const;
 
 const Shop = () => {
-  const [activeCategory, setActiveCategory] = useState<string>('All');
+  const [activeCategory, setActiveCategory] = useState<string>('XL');
   const [activeSaleType, setActiveSaleType] = useState<string>('Normal');
   const { data: products, isLoading } = useProducts(activeCategory);
 

@@ -14,9 +14,8 @@ const Footer = () => (
         <div>
           <h4 className="font-display font-bold text-foreground">Shop</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-            <li><Link to="/shop" className="hover:text-primary">Regular Pads</Link></li>
             <li><Link to="/shop" className="hover:text-primary">XL Pads</Link></li>
-            <li><Link to="/shop" className="hover:text-primary">Night Pads</Link></li>
+            <li><Link to="/shop" className="hover:text-primary">XXL Pads</Link></li>
           </ul>
         </div>
         <div>

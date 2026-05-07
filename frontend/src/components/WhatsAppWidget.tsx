@@ -1,6 +1,6 @@
 import { Phone } from 'lucide-react';
 
-const PHONE_NUMBER = "+916300215873";
+const PHONE_NUMBER = "+917092264632";
 
 export const WhatsAppWidget = () => {
   const openWhatsApp = () => {

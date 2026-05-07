@@ -77,17 +77,17 @@ const Cart = () => {
 
   const getUpiUrl = () => {
     const tr = `EZ${Date.now()}`;
-    return `upi://pay?pa=6300215873-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
+    return `upi://pay?pa=7092264632-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
   };
 
   const getGPayUrl = () => {
     const tr = `EZ${Date.now()}`;
-    return `tez://upi/pay?pa=6300215873-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
+    return `tez://upi/pay?pa=7092264632-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
   };
 
   const getPhonePeUrl = () => {
     const tr = `EZ${Date.now()}`;
-    return `phonepe://pay?pa=6300215873-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
+    return `phonepe://pay?pa=7092264632-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
   };
 
   const payViaWhatsApp = () => {
@@ -104,7 +104,7 @@ const Cart = () => {
     const message = `🛒 *New Order - Inches Eco Pads*\n\n📦 *Product:* ${productList}\n💰 *Total:* ₹${totalPrice()}\n⚡ *Click to Pay directly using UPI Apps:* ${paymentLink}\n\n👤 *Name:* ${form.full_name}\n📞 *Phone:* ${form.phone}\n📍 *Address:* ${fullAddress}\n📝 *Notes:* ${form.notes || 'None'}`;
     
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/+916300215873?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/+917092264632?text=${encoded}`, '_blank');
   };
 
   const sendToWhatsApp = () => {
@@ -126,7 +126,7 @@ const Cart = () => {
     const message = `🛒 *New Order - Inches Eco Pads*\n\n📦 *Product:* ${productList}\n💰 *Total Paid:* ₹${totalPrice()}\n💳 *Transaction ID:* ${transactionId}\n\n👤 *Name:* ${form.full_name}\n📞 *Phone:* ${form.phone}\n📍 *Address:* ${fullAddress}\n📝 *Notes:* ${form.notes || 'None'}`;
     
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/+916300215873?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/+917092264632?text=${encoded}`, '_blank');
   };
 
   const placeOrder = async (e: React.FormEvent) => {

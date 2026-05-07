@@ -110,11 +110,11 @@ const ProductsTab = () => {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<any>({
-    name: '', description: '', price: '', original_price: '', category: 'Regular', sale_type: 'Normal', tags: '', stock: '', image_url: '', is_active: true,
+    name: '', description: '', price: '', original_price: '', category: 'XL', sale_type: 'Normal', tags: '', stock: '', image_url: '', is_active: true,
   });
 
   const resetForm = () => {
-    setForm({ name: '', description: '', price: '', original_price: '', category: 'Regular', sale_type: 'Normal', tags: '', stock: '', image_url: '', is_active: true });
+    setForm({ name: '', description: '', price: '', original_price: '', category: 'XL', sale_type: 'Normal', tags: '', stock: '', image_url: '', is_active: true });
     setEditId(null);
     setShowForm(false);
   };
@@ -224,7 +224,7 @@ const ProductsTab = () => {
               <div>
                 <Label>Category</Label>
                 <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm">
-                  <option>Regular</option><option>XL</option><option>Night</option>
+                  <option>XL</option><option>XXL</option>
                 </select>
               </div>
             </div>
