@@ -31,7 +31,8 @@ router.post('/', upload.single('image'), (req, res) => {
   }
   // Host it relatively. Since server serves /api/uploads dynamically, if we used regular path, it would be localhost:5000/uploads
   // Actually, we'll map Express static so that /uploads route returns to backend/uploads.
-  const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const backendUrl = process.env.NODE_ENV === 'production' ? 'https://inches-safety.onrender.com' : 'http://localhost:5000';
+  const imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
   res.json({ image_url: imageUrl });
 });
 
