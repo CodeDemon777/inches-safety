@@ -34,7 +34,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 app.use(express.json());
-//app.use(mongoSanitize());
+// app.use(mongoSanitize())
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
