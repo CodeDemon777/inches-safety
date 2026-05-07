@@ -389,7 +389,7 @@ const OrdersTab = () => {
       head: [['Product', 'Quantity', 'Price', 'Total']],
       body: tableData,
       foot: [['', '', 'Grand Total:', `Rs. ${order.total}`]],
-      theme: 'grid'
+      theme: 'plain'
     });
     
     doc.save(`Invoice_${order.transaction_id || order._id || 'Order'}.pdf`);

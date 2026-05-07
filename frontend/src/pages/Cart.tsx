@@ -70,7 +70,7 @@ const Cart = () => {
         head: [['Product', 'Quantity', 'Price', 'Total']],
         body: tableData,
         foot: [['', '', 'Grand Total:', `Rs. ${totalPrice()}`]],
-        theme: 'grid'
+        theme: 'plain'
       });
       
       doc.save(`Invoice_${transactionId || 'Order'}.pdf`);
