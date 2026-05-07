@@ -82,17 +82,17 @@ const Cart = () => {
 
   const getUpiUrl = () => {
     const tr = `EZ${Date.now()}`;
-    return `upi://pay?pa=7092264632-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
+    return `upi://pay?pa=hareeskumar132-1@oksbi&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
   };
 
   const getGPayUrl = () => {
     const tr = `EZ${Date.now()}`;
-    return `tez://upi/pay?pa=7092264632-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
+    return `tez://upi/pay?pa=hareeskumar132-1@oksbi&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
   };
 
   const getPhonePeUrl = () => {
     const tr = `EZ${Date.now()}`;
-    return `phonepe://pay?pa=7092264632-4@ybl&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
+    return `phonepe://pay?pa=hareeskumar132-1@oksbi&pn=EcoCycle&tr=${tr}&tn=EcoCycle%20Order&am=${totalPrice().toFixed(2)}&cu=INR`;
   };
 
   const payViaWhatsApp = () => {
