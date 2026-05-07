@@ -22,11 +22,10 @@ const app = express();
 
 app.use(helmet({ crossOriginResourcePolicy: false })); // allow static images if needed
 app.use(cors({
-    origin: [
-        "https://inches-safety.vercel.app",
-        "https://inches.gl"
-    ],
-    credentials: true
+  origin: true,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 const limiter = rateLimit({
