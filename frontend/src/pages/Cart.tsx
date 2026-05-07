@@ -5,12 +5,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Minus, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingBag, Download } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { apiFetch } from '@/lib/api';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -127,6 +127,18 @@ const Cart = () => {
     
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/+917092264632?text=${encoded}`, '_blank');
+  };
+
+  const downloadQR = () => {
+    const canvas = document.getElementById('payment-qr') as HTMLCanvasElement;
+    if (!canvas) return;
+    const pngUrl = canvas.toDataURL('image/png').replace('image/png', 'image/octet-stream');
+    let downloadLink = document.createElement('a');
+    downloadLink.href = pngUrl;
+    downloadLink.download = `EcoCycle_Payment_QR.png`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
   };
 
   const placeOrder = async (e: React.FormEvent) => {
@@ -275,11 +287,17 @@ const Cart = () => {
               <div className="mt-6 space-y-4">
                 <div className="flex flex-col items-center justify-center p-4 border rounded-lg bg-white">
                   <h4 className="font-semibold mb-2 text-black">Scan & Pay (UPI)</h4>
-                  <QRCodeSVG 
-                    value={getUpiUrl()} 
-                    size={160} 
-                  />
-                  <p className="text-sm mt-3 text-center text-muted-foreground">Scan with GPay, PhonePe, or Paytm</p>
+                  <div className="relative">
+                    <QRCodeCanvas 
+                      id="payment-qr"
+                      value={getUpiUrl()} 
+                      size={160} 
+                    />
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={downloadQR} className="mt-2 text-xs h-8">
+                    <Download className="h-3 w-3 mr-1" /> Download QR
+                  </Button>
+                  <p className="text-sm mt-1 text-center text-muted-foreground">Scan with GPay, PhonePe, or Paytm</p>
                   <p className="font-bold text-lg mt-1 text-black">Total: ₹{totalPrice()}</p>
                 </div>
                 

@@ -15,7 +15,11 @@ router.get('/', async (req, res) => {
     }
     
     if (category && category !== 'All') {
-      query.category = category;
+      if (category === 'XL') {
+        query.category = { $in: ['XL', 'Regular'] };
+      } else {
+        query.category = category;
+      }
     }
 
     const products = await Product.find(query).sort({ createdAt: -1 });

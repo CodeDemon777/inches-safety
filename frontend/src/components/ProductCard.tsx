@@ -11,6 +11,7 @@ export interface Product {
   price: number;
   original_price?: number;
   image_url: string;
+  image_urls?: string[];
   category: string;
   sale_type?: string;
   tags: string[];
@@ -43,11 +44,31 @@ const ProductCard = ({ product }: { product: any }) => {
           Wholesale Available
         </span>
       )}
-      <div className="relative aspect-square bg-accent/50">
-        <span className="absolute left-3 top-3 z-10 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">
+      <div className="relative aspect-square bg-accent/50 overflow-hidden">
+        <span className="absolute left-3 top-3 z-20 rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground shadow-sm">
           {product.category}
         </span>
-        {product.image_url ? (
+        {product.image_urls && product.image_urls.length > 0 ? (
+          <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] relative">
+            {product.image_urls.map((url: string, idx: number) => (
+              <div key={idx} className="relative min-w-full h-full snap-center">
+                <img 
+                  src={url} 
+                  alt={`${product.name} - ${idx + 1}`} 
+                  loading="lazy" 
+                  className="h-full w-full object-cover" 
+                />
+              </div>
+            ))}
+            {product.image_urls.length > 1 && (
+              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+                {product.image_urls.map((_: any, i: number) => (
+                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80 shadow-sm border border-black/10" />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : product.image_url ? (
           <img src={product.image_url} alt={product.name} loading="lazy" width={400} height={400} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">

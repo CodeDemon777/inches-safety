@@ -110,30 +110,35 @@ const ProductsTab = () => {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [form, setForm] = useState<any>({
-    name: '', description: '', price: '', original_price: '', category: 'XL', sale_type: 'Normal', tags: '', stock: '', image_url: '', is_active: true,
+    name: '', description: '', price: '', original_price: '', category: 'XL', sale_type: 'Normal', tags: '', stock: '', image_url: '', image_urls: [], is_active: true,
   });
 
   const resetForm = () => {
-    setForm({ name: '', description: '', price: '', original_price: '', category: 'XL', sale_type: 'Normal', tags: '', stock: '', image_url: '', is_active: true });
+    setForm({ name: '', description: '', price: '', original_price: '', category: 'XL', sale_type: 'Normal', tags: '', stock: '', image_url: '', image_urls: [], is_active: true });
     setEditId(null);
     setShowForm(false);
   };
 
   const [uploadingImage, setUploadingImage] = useState(false);
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
     
     setUploadingImage(true);
     const formData = new FormData();
-    formData.append('image', file);
+    for (let i = 0; i < files.length; i++) {
+      formData.append('images', files[i]);
+    }
 
     try {
-      const res = await apiFetch('/upload', { method: 'POST', body: formData });
-      setForm(prev => ({ ...prev, image_url: res.image_url }));
-      toast.success('Image uploaded successfully');
+      const res = await apiFetch('/upload/multiple', { method: 'POST', body: formData });
+      setForm((prev: any) => ({ 
+        ...prev, 
+        image_urls: [...(prev.image_urls || []), ...res.image_urls]
+      }));
+      toast.success('Images uploaded successfully');
     } catch (err: any) {
-      toast.error('Failed to upload image: ' + err.message);
+      toast.error('Failed to upload images: ' + err.message);
     } finally {
       setUploadingImage(false);
     }
@@ -150,7 +155,8 @@ const ProductsTab = () => {
         sale_type: form.sale_type,
         tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
         stock: form.stock,
-        image_url: form.image_url || null,
+        image_url: form.image_urls && form.image_urls.length > 0 ? form.image_urls[0] : (form.image_url || null),
+        image_urls: form.image_urls || [],
         is_active: form.is_active,
       };
       if (editId) {
@@ -197,6 +203,7 @@ const ProductsTab = () => {
       tags: (p.tags || []).join(', '),
       stock: p.stock,
       image_url: p.image_url || '',
+      image_urls: p.image_urls && p.image_urls.length > 0 ? p.image_urls : (p.image_url ? [p.image_url] : []),
       is_active: p.is_active,
     });
     setEditId(p._id || p.id);
@@ -243,29 +250,40 @@ const ProductsTab = () => {
               </div>
             </div>
             <div>
-              <Label>Product Image</Label>
-              <div className="mt-1 flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-primary/50 bg-primary/5 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors group relative overflow-hidden">
-                  {form.image_url ? (
-                    <>
-                      <img src={form.image_url} alt="Preview" className="absolute inset-0 w-full h-full object-contain opacity-50 group-hover:opacity-30 transition-opacity" />
-                      <div className="z-10 flex flex-col items-center p-4 bg-background/80 rounded-lg backdrop-blur-sm">
-                        <p className="text-sm font-semibold text-foreground">Click or Drag to replace image</p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <svg className="w-8 h-8 mb-4 text-primary" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                      </svg>
-                      <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold text-primary">Click to upload</span> or drag and drop</p>
-                      <p className="text-xs text-muted-foreground">PNG, JPG, WEBP</p>
+              <Label>Product Images</Label>
+              
+              {(form.image_urls?.length > 0 || form.image_url) && (
+                <div className="flex gap-3 mt-2 mb-4 overflow-x-auto pb-2">
+                  {(form.image_urls?.length > 0 ? form.image_urls : [form.image_url]).map((url: string, idx: number) => (
+                    <div key={idx} className="relative flex-shrink-0 group">
+                      <img src={url} alt={`Preview ${idx + 1}`} className="w-24 h-24 object-cover rounded-md border" />
+                      <button 
+                        type="button"
+                        onClick={() => {
+                           const newUrls = [...(form.image_urls || [])];
+                           newUrls.splice(idx, 1);
+                           setForm({ ...form, image_urls: newUrls, image_url: newUrls.length > 0 ? newUrls[0] : '' });
+                        }}
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
                     </div>
-                  )}
-                  <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                  ))}
+                </div>
+              )}
+
+              <div className="mt-1 flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/50 bg-primary/5 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors group relative overflow-hidden">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Plus className="w-8 h-8 mb-4 text-primary" />
+                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold text-primary">Click to upload</span> multiple images</p>
+                    <p className="text-xs text-muted-foreground">PNG, JPG, WEBP</p>
+                  </div>
+                  <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} disabled={uploadingImage} />
                 </label>
               </div>
-              {uploadingImage && <p className="text-sm text-muted-foreground mt-2 animate-pulse">Uploading image...</p>}
+              {uploadingImage && <p className="text-sm text-muted-foreground mt-2 animate-pulse">Uploading images...</p>}
             </div>
             <div><Label>Tags (comma-separated)</Label><Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} className="mt-1" /></div>
             <div className="flex items-center gap-2">

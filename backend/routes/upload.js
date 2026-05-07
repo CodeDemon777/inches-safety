@@ -29,11 +29,18 @@ router.post('/', upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-  // Host it relatively. Since server serves /api/uploads dynamically, if we used regular path, it would be localhost:5000/uploads
-  // Actually, we'll map Express static so that /uploads route returns to backend/uploads.
   const backendUrl = process.env.NODE_ENV === 'production' ? 'https://inches-safety.onrender.com' : 'http://localhost:5000';
   const imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
   res.json({ image_url: imageUrl });
+});
+
+router.post('/multiple', upload.array('images', 5), (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: 'No files uploaded' });
+  }
+  const backendUrl = process.env.NODE_ENV === 'production' ? 'https://inches-safety.onrender.com' : 'http://localhost:5000';
+  const imageUrls = req.files.map(file => `${backendUrl}/uploads/${file.filename}`);
+  res.json({ image_urls: imageUrls });
 });
 
 export default router;
