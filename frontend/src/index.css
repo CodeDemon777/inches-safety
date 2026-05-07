@@ -1,0 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 20% 97%;
+    --foreground: 150 30% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 150 30% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 30% 10%;
+
+    --primary: 150 32% 22%;
+    --primary-foreground: 40 20% 97%;
+
+    --secondary: 90 20% 90%;
+    --secondary-foreground: 150 30% 10%;
+
+    --muted: 80 15% 92%;
+    --muted-foreground: 150 10% 45%;
+
+    --accent: 90 25% 88%;
+    --accent-foreground: 150 30% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 80 15% 85%;
+    --input: 80 15% 85%;
+    --ring: 150 32% 22%;
+
+    --radius: 0.75rem;
+
+    --hero-bg: 90 30% 92%;
+    --cta-bg: 150 32% 22%;
+    --cta-foreground: 40 20% 97%;
+    --badge-bg: 90 25% 88%;
+    --badge-foreground: 150 32% 22%;
+    --star: 45 100% 50%;
+    --testimonial-bg: 80 20% 95%;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 150 32% 22%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 90 25% 88%;
+    --sidebar-accent-foreground: 150 30% 10%;
+    --sidebar-border: 80 15% 85%;
+    --sidebar-ring: 150 32% 22%;
+
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
