@@ -1,41 +1,15 @@
 import PDFDocument from 'pdfkit';
-import QRCode from 'qrcode';
-import bwipjs from 'bwip-js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import https from 'https';
-import http from 'http';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const fetchImage = (url) => {
-    return new Promise((resolve, reject) => {
-        if (!url) return resolve(null);
-        if (url.startsWith('http://localhost') || url.startsWith('http://127.0.0.1')) {
-            const client = http;
-            client.get(url, (res) => {
-                const data = [];
-                res.on('data', chunk => data.push(chunk));
-                res.on('end', () => resolve(Buffer.concat(data)));
-            }).on('error', reject);
-        } else if (url.startsWith('https')) {
-            https.get(url, (res) => {
-                const data = [];
-                res.on('data', chunk => data.push(chunk));
-                res.on('end', () => resolve(Buffer.concat(data)));
-            }).on('error', reject);
-        } else {
-            resolve(null);
-        }
-    });
-};
-
 export const generateInvoicePDF = (orderData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const doc = new PDFDocument({ margin: 40 });
+            const doc = new PDFDocument({ margin: 30, size: 'A4' });
             
             const buffers = [];
             doc.on('data', buffers.push.bind(buffers));
@@ -44,12 +18,15 @@ export const generateInvoicePDF = (orderData) => {
                 resolve(pdfData);
             });
 
+            // Fallback font to Helvetica
+            doc.font('Helvetica');
+
             const addressStr = `${orderData.address_line1}, ${orderData.address_line2 ? orderData.address_line2 + ', ' : ''}${orderData.city}, ${orderData.state} - ${orderData.pincode}`;
 
             const order = {
-                invoiceNo: `INV-${orderData._id.toString().slice(-6).toUpperCase()}`,
+                invoiceNo: `FAIMX${orderData._id.toString().slice(-6).toUpperCase()}${Math.floor(Math.random()*1000)}`,
                 orderId: orderData._id.toString(),
-                date: new Date(orderData.createdAt).toLocaleDateString(),
+                date: new Date(orderData.createdAt).toLocaleDateString('en-IN').replace(/\//g, '-'),
                 paymentStatus: orderData.payment_status || 'pending',
                 customer: {
                     name: orderData.full_name || 'Customer',
@@ -60,134 +37,172 @@ export const generateInvoicePDF = (orderData) => {
                     name: item.product_name,
                     qty: item.quantity,
                     price: item.price,
-                    image_url: item.image_url
                 }))
             };
 
             const total = orderData.total;
             const taxable = total / 1.18;
-            const cgst = taxable * 0.09;
-            const sgst = taxable * 0.09;
+            const igst = taxable * 0.18; // Assume 18% IGST for simplicity as per Flipkart example
 
-            const logoPath = path.join(__dirname, '../assets/logo.png');
-            if (fs.existsSync(logoPath)) {
-                doc.image(logoPath, 40, 30, { width: 80 });
-            }
+            let yPos = 30;
 
-            try {
-                const qrDataUrl = await QRCode.toDataURL(order.orderId);
-                doc.image(qrDataUrl, 460, 30, { width: 80 });
-            } catch (e) {
-                console.error("QR Code Error:", e);
-            }
+            // TAX INVOICE Header
+            doc.fontSize(14).font('Helvetica-Bold').text('Tax Invoice', 30, yPos, { align: 'center' });
+            yPos += 30;
 
-            doc.fontSize(24).fillColor('#2563eb').text('INCHES SAFETY', 150, 40, { align: 'left' });
-            doc.fontSize(18).fillColor('black').text('TAX INVOICE', 150, 70, { align: 'left' });
+            // Sold By
+            doc.fontSize(10).font('Helvetica-Bold').text('Sold By: INCHES SAFETY PVT LTD ,', 30, yPos);
+            yPos += 15;
+            doc.font('Helvetica').fontSize(9).text('Ship-from Address: Peelamedu, Coimbatore - 641004,', 30, yPos);
+            yPos += 12;
+            doc.text('Tamil Nadu, India, IN-TN ,', 30, yPos);
+            yPos += 15;
+            doc.font('Helvetica-Bold').text('GSTIN - 29ABCDE1234F1Z5', 30, yPos);
+            
+            yPos += 25;
+            doc.font('Helvetica-Bold').fontSize(10).text(`Total items: ${order.products.length}`, 30, yPos);
+            yPos += 15;
 
-            doc.moveDown(2);
-            let yPos = doc.y;
+            // Table Header Background
+            doc.rect(30, yPos, 535, 20).fillAndStroke('#f0f0f0', '#cccccc');
+            doc.fillColor('black').font('Helvetica-Bold').fontSize(8);
+            
+            doc.text('Product Title', 35, yPos + 6);
+            doc.text('Qty', 220, yPos + 6);
+            doc.text('Gross Amount Rs.', 250, yPos + 6);
+            doc.text('Discount Rs.', 330, yPos + 6);
+            doc.text('Taxable Value Rs.', 390, yPos + 6);
+            doc.text('IGST Rs.', 470, yPos + 6);
+            doc.text('Total Rs.', 520, yPos + 6);
 
-            doc.fontSize(11);
-            doc.text('Sold By:', 40, yPos);
-            doc.text('Inches Safety Pvt Ltd', 40, yPos + 15);
-            doc.text('Peelamedu, Coimbatore - 641004', 40, yPos + 30);
-            doc.text('GSTIN: 29ABCDE1234F1Z5', 40, yPos + 45);
+            yPos += 25;
+            doc.font('Helvetica').fontSize(8);
 
-            doc.text('Bill To:', 300, yPos);
-            doc.text(order.customer.name, 300, yPos + 15);
-            doc.text(order.customer.address, 300, yPos + 30, { width: 200 });
-            doc.text(order.customer.phone, 300, yPos + 60);
+            // Table Rows
+            let totalGross = 0;
+            let totalQty = 0;
 
-            yPos += 90;
-            doc.text(`Invoice No: ${order.invoiceNo}`, 40, yPos);
-            doc.text(`Order ID: ${order.orderId}`, 40, yPos + 15);
-            doc.text(`Date: ${order.date}`, 40, yPos + 30);
-
-            const statusColors = {
-                paid: 'green',
-                completed: 'green',
-                pending: 'orange',
-                failed: 'red'
-            };
-            const pColor = statusColors[order.paymentStatus.toLowerCase()] || 'black';
-            doc.fillColor(pColor).text(`Payment Status: ${order.paymentStatus.toUpperCase()}`, 300, yPos + 15);
-            doc.fillColor('black');
-
-            try {
-                const barcodeBuffer = await bwipjs.toBuffer({
-                    bcid: 'code128',
-                    text: order.orderId,
-                    scale: 2,
-                    height: 10,
-                    includetext: true,
-                    textxalign: 'center',
-                });
-                doc.image(barcodeBuffer, 40, yPos + 50, { width: 150 });
-            } catch (e) {
-                console.error("Barcode Error:", e);
-            }
-
-            let tableTop = yPos + 100;
-            doc.rect(40, tableTop, 520, 25).fill('#2563eb');
-            doc.fillColor('white').fontSize(11);
-            doc.text('Product', 50, tableTop + 7);
-            doc.text('Qty', 300, tableTop + 7);
-            doc.text('Price', 380, tableTop + 7);
-            doc.text('Total', 470, tableTop + 7);
-
-            let position = tableTop + 40;
-            doc.fillColor('black');
-
-            for (const item of order.products) {
+            order.products.forEach((item, index) => {
                 const itemTotal = item.qty * item.price;
+                const itemTaxable = itemTotal / 1.18;
+                const itemIgst = itemTotal - itemTaxable;
 
-                if (item.image_url) {
-                    try {
-                        const imgBuf = await fetchImage(item.image_url);
-                        if (imgBuf) {
-                            doc.image(imgBuf, 50, position - 5, { width: 30, height: 30 });
-                        }
-                    } catch (e) {
-                        console.log("Failed to load product image for pdf");
-                    }
-                }
+                totalGross += itemTotal;
+                totalQty += item.qty;
 
-                doc.text(item.name, 90, position, { width: 200 });
-                doc.text(item.qty.toString(), 300, position);
-                doc.text(`Rs. ${item.price.toFixed(2)}`, 380, position);
-                doc.text(`Rs. ${itemTotal.toFixed(2)}`, 470, position);
+                // Product details block
+                doc.font('Helvetica-Bold').text(item.name, 35, yPos, { width: 180 });
+                doc.font('Helvetica').fontSize(7).text(`FSN: ACC${Math.random().toString(36).substring(2, 12).toUpperCase()}`, 35, yPos + 10);
+                doc.text(`HSN/SAC: 85183000`, 35, yPos + 20);
+                doc.text(`Warranty: NA`, 35, yPos + 30);
+                doc.text(`18.0 % IGST:`, 35, yPos + 40);
 
-                position += 40;
+                // Numbers
+                doc.fontSize(8);
+                doc.text(item.qty.toString(), 225, yPos);
+                doc.text(itemTotal.toFixed(2), 260, yPos);
+                doc.text('0.00', 340, yPos);
+                doc.text(itemTaxable.toFixed(2), 400, yPos);
+                doc.text(itemIgst.toFixed(2), 480, yPos);
+                doc.text(itemTotal.toFixed(2), 520, yPos);
+
+                yPos += 55;
+            });
+
+            // Shipping Charges (Hardcoded for example, typically 40 or 0)
+            const shipping = 0;
+            if (shipping > 0) {
+                doc.text('Shipping And Handling Charges', 35, yPos);
+                doc.text('1', 225, yPos);
+                doc.text(shipping.toFixed(2), 260, yPos);
+                doc.text('0.00', 340, yPos);
+                doc.text('0.00', 400, yPos);
+                doc.text('0.00', 480, yPos);
+                doc.text(shipping.toFixed(2), 520, yPos);
+                yPos += 15;
             }
 
-            doc.moveTo(40, position).lineTo(560, position).stroke();
-            position += 20;
+            // Totals Row
+            doc.moveTo(30, yPos).lineTo(565, yPos).stroke('#cccccc');
+            yPos += 5;
+            doc.font('Helvetica-Bold').text('Total', 35, yPos);
+            doc.text(totalQty.toString(), 225, yPos);
+            doc.text((totalGross + shipping).toFixed(2), 260, yPos);
+            doc.text('0.00', 340, yPos);
+            doc.text(taxable.toFixed(2), 400, yPos);
+            doc.text(igst.toFixed(2), 480, yPos);
+            doc.text(total.toFixed(2), 520, yPos);
 
-            doc.fontSize(11).text('Taxable Value', 320, position);
-            doc.text(`Rs. ${taxable.toFixed(2)}`, 470, position);
-            position += 15;
+            yPos += 15;
+            doc.moveTo(30, yPos).lineTo(565, yPos).stroke('#cccccc');
+            yPos += 5;
+
+            // Grand Total
+            doc.fontSize(10).text(`Grand Total Rs. ${total.toFixed(2)}`, 480, yPos);
+
+            yPos += 40;
+
+            // Signature Block
+            doc.fontSize(12).font('Courier-Oblique').text('Inches Safety', 450, yPos);
+            yPos += 15;
+            doc.fontSize(8).font('Helvetica-Bold').text('Signature', 450, yPos);
+            yPos += 10;
+            doc.font('Helvetica').text('This is a computer generated invoice. No signature required.', 30, yPos);
             
-            doc.text('CGST 9%', 320, position);
-            doc.text(`Rs. ${cgst.toFixed(2)}`, 470, position);
-            position += 15;
+            yPos += 20;
+
+            // Terms
+            doc.fontSize(7).text(': At Inches Safety we try to deliver perfectly each and every time. But in the off-chance that you need to return the item, please do so with the original Brand box/price tag, original packing and invoice without which it will be really difficult for us to act on your request. Please help us in helping you. Terms and conditions apply.', 30, yPos, { width: 535 });
+            yPos += 25;
+            doc.text('The goods sold as are intended for end user consumption and not for re-sale.', 30, yPos);
+            yPos += 15;
+
+            // Regd Office
+            doc.font('Helvetica-Bold').text('Regd. office:', 30, yPos, { continued: true });
+            doc.font('Helvetica').text(' Peelamedu, Coimbatore - 641004, Tamil Nadu, India. INCHES SAFETY PVT LTD', 30, yPos);
+            yPos += 15;
+            doc.text('Contact Inches Safety: 7092264632 || www.inchessafety.com/helpcentre', 30, yPos);
+            yPos += 15;
+            doc.text('E. & O.E. page 1 of 1', 30, yPos);
+
+            // Left note
+            doc.text('*Keep this invoice and manufacturer box for warranty purposes.', 30, yPos + 15, { width: 150 });
+
+            // Addresses
+            yPos += 40;
+            doc.moveTo(30, yPos).lineTo(565, yPos).stroke('#cccccc');
+            yPos += 10;
+
+            const col1 = 30;
+            const col2 = 220;
+            const col3 = 410;
+
+            // Column 1: Ship To
+            doc.font('Helvetica-Bold').fontSize(9).text('Ship To', col1, yPos);
+            doc.font('Helvetica').fontSize(8).text(order.customer.name, col1, yPos + 15);
+            doc.text(order.customer.address, col1, yPos + 25, { width: 160 });
+            doc.text(`Phone: ${order.customer.phone}`, col1, yPos + 55);
+
+            // Column 2: Bill To
+            doc.font('Helvetica-Bold').fontSize(9).text('Bill To', col2, yPos);
+            doc.font('Helvetica').fontSize(8).text(order.customer.name, col2, yPos + 15);
+            doc.text(order.customer.address, col2, yPos + 25, { width: 160 });
+            doc.text(`Phone: ${order.customer.phone}`, col2, yPos + 55);
+
+            // Column 3: Order Details
+            doc.font('Helvetica-Bold').fontSize(8).text(`Order ID:`, col3, yPos);
+            doc.font('Helvetica').text(order.orderId, col3, yPos + 10);
             
-            doc.text('SGST 9%', 320, position);
-            doc.text(`Rs. ${sgst.toFixed(2)}`, 470, position);
-            position += 15;
-
-            doc.fontSize(14).font('Helvetica-Bold').text('Grand Total:', 320, position);
-            doc.text(`Rs. ${total.toFixed(2)}`, 470, position);
-            doc.font('Helvetica');
-
-            position += 50;
-            doc.fontSize(18).font('Courier-Oblique').text('Inches Safety', 400, position);
-            doc.fontSize(10).font('Helvetica').text('Authorized Signatory', 400, position + 20);
-
-            position += 60;
-            doc.fontSize(10).text('This is a computer generated invoice.', 40, position, { align: 'center' });
+            doc.font('Helvetica-Bold').text(`Order Date:`, col3, yPos + 25, { continued: true }).font('Helvetica').text(` ${order.date}`);
+            doc.font('Helvetica-Bold').text(`Invoice Date:`, col3, yPos + 35, { continued: true }).font('Helvetica').text(` ${order.date}`);
+            doc.font('Helvetica-Bold').text(`PAN:`, col3, yPos + 45, { continued: true }).font('Helvetica').text(` AAKCK1864D`);
+            
+            doc.font('Helvetica-Bold').text(`Invoice Number #`, col3, yPos + 60);
+            doc.font('Helvetica').text(order.invoiceNo, col3, yPos + 70);
 
             doc.end();
         } catch (err) {
+            console.error("PDF Generation Error:", err);
             reject(err);
         }
     });
