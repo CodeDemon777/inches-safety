@@ -15,6 +15,7 @@ import adminRoutes from './routes/admin.js';
 import uploadRoutes from './routes/upload.js';
 import feedbackRoutes from './routes/feedback.js';
 import contactRoutes from './routes/contact.js';
+import invoiceRoutes from './routes/invoiceRoutes.js';
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/invoice', invoiceRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });

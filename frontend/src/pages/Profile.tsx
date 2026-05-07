@@ -152,7 +152,14 @@ const Profile = () => {
                           <Icon className="h-5 w-5 text-primary" />
                           <span className="font-medium text-foreground capitalize">{order.status}</span>
                         </div>
-                        <span className="font-display font-bold text-foreground">₹{order.total}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="font-display font-bold text-foreground">₹{order.total}</span>
+                          <Button variant="outline" size="sm" asChild className="h-8 px-3">
+                            <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/invoice/${order._id || order.id}`} target="_blank" rel="noreferrer">
+                              Invoice
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                       <p className="mt-1 text-xs text-muted-foreground">
                         {new Date(order.createdAt || order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}

@@ -415,8 +415,10 @@ const OrdersTab = () => {
                 <div className="flex flex-col items-end gap-3">
                   <div className="flex items-center gap-3">
                     <span className="font-display text-lg font-bold text-foreground">₹{order.total}</span>
-                    <Button variant="outline" size="sm" onClick={() => generateAdminBillPDF(order)} className="gap-2">
-                      <Download className="h-4 w-4" /> Bill
+                    <Button variant="outline" size="sm" asChild className="gap-2">
+                      <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/invoice/${order._id || order.id}`} target="_blank" rel="noreferrer">
+                        <Download className="h-4 w-4" /> Bill
+                      </a>
                     </Button>
                   </div>
                   <div className="flex gap-2 items-center">
