@@ -105,8 +105,9 @@ const Cart = () => {
     const fullAddress = `${form.address_line1}, ${form.address_line2 ? form.address_line2 + ', ' : ''}${form.city}, ${form.state} - ${form.pincode}`;
     
     const paymentLink = getUpiUrl();
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(paymentLink)}`;
     
-    const message = `🛒 *New Order - Inches Eco Pads*\n\n📦 *Product:* ${productList}\n💰 *Total:* ₹${totalPrice()}\n⚡ *Click to Pay directly using UPI Apps:* ${paymentLink}\n\n👤 *Name:* ${form.full_name}\n📞 *Phone:* ${form.phone}\n📍 *Address:* ${fullAddress}\n📝 *Notes:* ${form.notes || 'None'}`;
+    const message = `🛒 *New Order - Inches Eco Pads*\n\n📦 *Product:* ${productList}\n💰 *Total:* ₹${totalPrice()}\n⚡ *Click to Pay directly using UPI Apps:* ${paymentLink}\n\n📷 *Scan QR Code to Pay:* ${qrUrl}\n\n👤 *Name:* ${form.full_name}\n📞 *Phone:* ${form.phone}\n📍 *Address:* ${fullAddress}\n📝 *Notes:* ${form.notes || 'None'}`;
     
     const encoded = encodeURIComponent(message);
     window.open(`https://wa.me/+917092264632?text=${encoded}`, '_blank');
