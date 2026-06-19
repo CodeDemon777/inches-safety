@@ -155,7 +155,7 @@ const Profile = () => {
                         <div className="flex items-center gap-3">
                           <span className="font-display font-bold text-foreground">₹{order.total}</span>
                           <Button variant="outline" size="sm" asChild className="h-8 px-3">
-                            <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/invoice/${order._id || order.id}`} target="_blank" rel="noreferrer">
+                            <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/invoice/${order._id || order.id}?token=${localStorage.getItem('token')}`} target="_blank" rel="noreferrer">
                               Invoice
                             </a>
                           </Button>

@@ -1,15 +1,21 @@
 import express from 'express';
 import Order from '../models/Order.js';
 import { generateInvoicePDF } from '../utils/pdfGenerator.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireAuth, async (req, res) => {
     try {
         const orderData = await Order.findById(req.params.id);
         
         if (!orderData) {
             return res.status(404).json({ error: 'Order not found' });
+        }
+
+        // Authorize: user must be an admin OR own the order
+        if (req.user.role !== 'admin' && orderData.user_id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ error: 'Forbidden: You do not have permission to view this invoice.' });
         }
 
         const pdfBuffer = await generateInvoicePDF(orderData);
