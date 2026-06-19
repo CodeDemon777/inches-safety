@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api';
 
-export const useOrders = () => {
+export const useOrders = (enabled = true) => {
   return useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
       return await apiFetch('/orders/my-orders');
     },
+    enabled,
   });
 };
 

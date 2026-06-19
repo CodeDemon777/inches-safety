@@ -23,7 +23,7 @@ const Profile = () => {
   const { user, setUser, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  const { data: orders } = useOrders();
+  const { data: orders } = useOrders(!!user);
 
   const [form, setForm] = useState({
     full_name: '', phone: '', address_line1: '', address_line2: '', city: '', state: '', pincode: '',
