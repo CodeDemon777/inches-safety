@@ -1,4 +1,5 @@
-import { ShoppingCart } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/store/cartStore';
 import { toast } from 'sonner';
@@ -20,6 +21,27 @@ export interface Product {
 
 const ProductCard = ({ product }: { product: any }) => {
   const addItem = useCartStore((s) => s.addItem);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const handleScroll = () => {
+    if (!containerRef.current) return;
+    const { scrollLeft, clientWidth } = containerRef.current;
+    if (clientWidth > 0) {
+      const index = Math.round(scrollLeft / clientWidth);
+      setActiveIdx(index);
+    }
+  };
+
+  const scrollToImage = (index: number) => {
+    if (!containerRef.current) return;
+    const { clientWidth } = containerRef.current;
+    containerRef.current.scrollTo({
+      left: index * clientWidth,
+      behavior: 'smooth'
+    });
+    setActiveIdx(index);
+  };
 
   const handleAdd = () => {
     if (product.stock <= 0) {
@@ -49,23 +71,64 @@ const ProductCard = ({ product }: { product: any }) => {
           {product.category}
         </span>
         {product.image_urls && product.image_urls.length > 0 ? (
-          <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] relative">
-            {product.image_urls.map((url: string, idx: number) => (
-              <div key={idx} className="relative min-w-full h-full snap-center">
-                <img 
-                  src={url} 
-                  alt={`${product.name} - ${idx + 1}`} 
-                  loading="lazy" 
-                  className="h-full w-full object-cover" 
-                />
-              </div>
-            ))}
+          <div className="relative w-full h-full group/carousel">
+            <div 
+              ref={containerRef}
+              onScroll={handleScroll}
+              className="flex w-full h-full overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] relative"
+            >
+              {product.image_urls.map((url: string, idx: number) => (
+                <div key={idx} className="relative min-w-full h-full snap-center">
+                  <img 
+                    src={url} 
+                    alt={`${product.name} - ${idx + 1}`} 
+                    loading="lazy" 
+                    className="h-full w-full object-cover" 
+                  />
+                </div>
+              ))}
+            </div>
             {product.image_urls.length > 1 && (
-              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
-                {product.image_urls.map((_: any, i: number) => (
-                  <div key={i} className="w-1.5 h-1.5 rounded-full bg-white/80 shadow-sm border border-black/10" />
-                ))}
-              </div>
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    scrollToImage((activeIdx - 1 + product.image_urls.length) % product.image_urls.length);
+                  }}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-foreground shadow-md transition-opacity duration-200 md:opacity-0 md:group-hover/carousel:opacity-100 border border-black/5 hover:bg-white z-10"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    scrollToImage((activeIdx + 1) % product.image_urls.length);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-foreground shadow-md transition-opacity duration-200 md:opacity-0 md:group-hover/carousel:opacity-100 border border-black/5 hover:bg-white z-10"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+                <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+                  {product.image_urls.map((_: any, i: number) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        scrollToImage(i);
+                      }}
+                      className={`h-1.5 rounded-full transition-all duration-300 border border-black/10 ${
+                        activeIdx === i ? 'bg-primary w-3' : 'bg-white/80 w-1.5'
+                      }`}
+                      aria-label={`Go to image ${i + 1}`}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </div>
         ) : product.image_url ? (
