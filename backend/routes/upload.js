@@ -26,6 +26,20 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 const router = express.Router();
 
+router.get('/list', requireAdmin, (req, res) => {
+  try {
+    const files = fs.readdirSync(uploadDir);
+    const backendUrl = process.env.NODE_ENV === 'production' ? 'https://inches-safety.onrender.com' : 'http://localhost:5000';
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+    const imageUrls = files
+      .filter(file => imageExtensions.includes(path.extname(file).toLowerCase()))
+      .map(file => `${backendUrl}/uploads/${file}`);
+    res.json({ image_urls: imageUrls });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read uploads directory: ' + err.message });
+  }
+});
+
 router.post('/', requireAdmin, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });

@@ -119,29 +119,39 @@ const ProductsTab = () => {
     setShowForm(false);
   };
 
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
-    setUploadingImage(true);
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append('images', files[i]);
-    }
+  const [availableImages, setAvailableImages] = useState<string[]>([]);
+  const [loadingImages, setLoadingImages] = useState(false);
 
-    try {
-      const res = await apiFetch('/upload/multiple', { method: 'POST', body: formData });
-      setForm((prev: any) => ({ 
-        ...prev, 
-        image_urls: [...(prev.image_urls || []), ...res.image_urls]
-      }));
-      toast.success('Images uploaded successfully');
-    } catch (err: any) {
-      toast.error('Failed to upload images: ' + err.message);
-    } finally {
-      setUploadingImage(false);
+  useEffect(() => {
+    const fetchImages = async () => {
+      setLoadingImages(true);
+      try {
+        const res = await apiFetch('/upload/list');
+        setAvailableImages(res.image_urls || []);
+      } catch (err: any) {
+        toast.error('Failed to load available images: ' + err.message);
+      } finally {
+        setLoadingImages(false);
+      }
+    };
+    if (showForm) {
+      fetchImages();
     }
+  }, [showForm]);
+
+  const toggleImageSelection = (url: string) => {
+    const isSelected = form.image_urls?.includes(url);
+    let newUrls = [...(form.image_urls || [])];
+    if (isSelected) {
+      newUrls = newUrls.filter((u: string) => u !== url);
+    } else {
+      newUrls.push(url);
+    }
+    setForm({ 
+      ...form, 
+      image_urls: newUrls, 
+      image_url: newUrls.length > 0 ? newUrls[0] : '' 
+    });
   };
 
   const saveMutation = useMutation({
@@ -250,40 +260,50 @@ const ProductsTab = () => {
               </div>
             </div>
             <div>
-              <Label>Product Images</Label>
-              
-              {(form.image_urls?.length > 0 || form.image_url) && (
-                <div className="flex gap-3 mt-2 mb-4 overflow-x-auto pb-2">
-                  {(form.image_urls?.length > 0 ? form.image_urls : [form.image_url]).map((url: string, idx: number) => (
-                    <div key={idx} className="relative flex-shrink-0 group">
-                      <img src={url} alt={`Preview ${idx + 1}`} className="w-24 h-24 object-cover rounded-md border" />
-                      <button 
-                        type="button"
-                        onClick={() => {
-                           const newUrls = [...(form.image_urls || [])];
-                           newUrls.splice(idx, 1);
-                           setForm({ ...form, image_urls: newUrls, image_url: newUrls.length > 0 ? newUrls[0] : '' });
-                        }}
-                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+              <Label>Product Images (Select from uploads)</Label>
+              {loadingImages ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                  Loading available images...
+                </div>
+              ) : availableImages.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No images found in uploads folder.</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4 mt-2">
+                  {availableImages.map((url: string, idx: number) => {
+                    const isSelected = form.image_urls?.includes(url);
+                    const isPrimary = form.image_urls?.[0] === url;
+                    return (
+                      <div 
+                        key={idx} 
+                        onClick={() => toggleImageSelection(url)}
+                        className={`relative cursor-pointer group rounded-xl overflow-hidden border-2 transition-all aspect-square ${
+                          isSelected 
+                            ? 'border-primary ring-2 ring-primary/20 scale-[0.98]' 
+                            : 'border-muted hover:border-muted-foreground/50'
+                        }`}
                       >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
+                        <img src={url} alt={`Option ${idx + 1}`} className="w-full h-full object-cover" />
+                        
+                        {/* Selected overlay / indicators */}
+                        {isSelected && (
+                          <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1 shadow-md">
+                            <CheckCircle className="w-4 h-4" />
+                          </div>
+                        )}
+                        
+                        {isPrimary && (
+                          <div className="absolute bottom-2 left-2 right-2 bg-background/95 backdrop-blur-sm text-foreground text-[10px] font-semibold py-1 px-2 rounded border text-center shadow-sm">
+                            Cover Image
+                          </div>
+                        )}
+
+                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
-
-              <div className="mt-1 flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/50 bg-primary/5 rounded-xl cursor-pointer hover:bg-primary/10 transition-colors group relative overflow-hidden">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Plus className="w-8 h-8 mb-4 text-primary" />
-                    <p className="mb-2 text-sm text-muted-foreground"><span className="font-semibold text-primary">Click to upload</span> multiple images</p>
-                    <p className="text-xs text-muted-foreground">PNG, JPG, WEBP</p>
-                  </div>
-                  <input type="file" className="hidden" accept="image/*" multiple onChange={handleImageUpload} disabled={uploadingImage} />
-                </label>
-              </div>
-              {uploadingImage && <p className="text-sm text-muted-foreground mt-2 animate-pulse">Uploading images...</p>}
             </div>
             <div><Label>Tags (comma-separated)</Label><Input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} className="mt-1" /></div>
             <div className="flex items-center gap-2">
