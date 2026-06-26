@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAdminStats } from '@/hooks/useAdminStats';
 import { useAllProducts } from '@/hooks/useProducts';
 import { useAdminOrders } from '@/hooks/useOrders';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, resolveImageUrl } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -325,7 +325,7 @@ const ProductsTab = () => {
             <div key={p._id || p.id} className="flex items-center justify-between rounded-lg border bg-card p-4">
               <div className="flex items-center gap-4">
                 {p.image_url ? (
-                  <img src={p.image_url} alt={p.name} className="h-12 w-12 rounded-lg object-cover" />
+                  <img src={resolveImageUrl(p.image_url)} alt={p.name} className="h-12 w-12 rounded-lg object-cover" />
                 ) : (
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent text-xl">🌿</div>
                 )}

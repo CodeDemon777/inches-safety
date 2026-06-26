@@ -3,6 +3,7 @@ import { ShoppingCart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore } from '@/store/cartStore';
 import { toast } from 'sonner';
+import { resolveImageUrl } from '@/lib/api';
 
 export interface Product {
   id: string;
@@ -80,7 +81,7 @@ const ProductCard = ({ product }: { product: any }) => {
               {product.image_urls.map((url: string, idx: number) => (
                 <div key={idx} className="relative min-w-full h-full snap-center">
                   <img 
-                    src={url} 
+                    src={resolveImageUrl(url)} 
                     alt={`${product.name} - ${idx + 1}`} 
                     loading="lazy" 
                     className="h-full w-full object-cover" 
@@ -132,7 +133,7 @@ const ProductCard = ({ product }: { product: any }) => {
             )}
           </div>
         ) : product.image_url ? (
-          <img src={product.image_url} alt={product.name} loading="lazy" width={400} height={400} className="h-full w-full object-cover" />
+          <img src={resolveImageUrl(product.image_url)} alt={product.name} loading="lazy" width={400} height={400} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <span className="text-4xl text-muted-foreground/30">🌿</span>

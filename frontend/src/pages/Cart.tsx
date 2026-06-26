@@ -9,7 +9,7 @@ import { Minus, Plus, Trash2, ShoppingBag, Download } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, resolveImageUrl } from '@/lib/api';
 import { QRCodeCanvas } from 'qrcode.react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -201,7 +201,7 @@ const Cart = () => {
               items.map((item) => (
                 <div key={item.id} className="flex gap-4 rounded-lg border bg-card p-4">
                   {item.image ? (
-                    <img src={item.image} alt={item.name} className="h-24 w-24 rounded-lg object-cover" loading="lazy" width={96} height={96} />
+                    <img src={resolveImageUrl(item.image)} alt={item.name} className="h-24 w-24 rounded-lg object-cover" loading="lazy" width={96} height={96} />
                   ) : (
                     <div className="flex h-24 w-24 items-center justify-center rounded-lg bg-accent text-3xl">🌿</div>
                   )}

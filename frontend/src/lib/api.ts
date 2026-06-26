@@ -1,4 +1,17 @@
-const API_URL = import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : 'http://localhost:5000/api';
+export const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = `${BACKEND_URL}/api`;
+ 
+export const resolveImageUrl = (url: string): string => {
+  if (!url) return '';
+  if (url.startsWith('/uploads/')) {
+    return `${BACKEND_URL}${url}`;
+  }
+  if (url.includes('/uploads/')) {
+    const relativePath = url.slice(url.indexOf('/uploads/'));
+    return `${BACKEND_URL}${relativePath}`;
+  }
+  return url;
+};
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
   const token = localStorage.getItem('token');
