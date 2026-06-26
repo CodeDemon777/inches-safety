@@ -3,14 +3,14 @@ const API_URL = `${BACKEND_URL}/api`;
  
 export const resolveImageUrl = (url: string): string => {
   if (!url) return '';
-  if (url.startsWith('/uploads/')) {
-    return `${BACKEND_URL}${url}`;
+  // Normalize backslashes to forward slashes
+  const cleanUrl = url.replace(/\\/g, '/');
+  
+  if (cleanUrl.includes('uploads/')) {
+    const relativePath = cleanUrl.slice(cleanUrl.indexOf('uploads/'));
+    return `${BACKEND_URL}/${relativePath}`;
   }
-  if (url.includes('/uploads/')) {
-    const relativePath = url.slice(url.indexOf('/uploads/'));
-    return `${BACKEND_URL}${relativePath}`;
-  }
-  return url;
+  return cleanUrl;
 };
 
 export const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
