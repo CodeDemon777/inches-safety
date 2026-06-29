@@ -283,7 +283,7 @@ const ProductsTab = () => {
                             : 'border-muted hover:border-muted-foreground/50'
                         }`}
                       >
-                        <img src={url} alt={`Option ${idx + 1}`} className="w-full h-full object-cover" />
+                        <img src={resolveImageUrl(url)} alt={`Option ${idx + 1}`} className="w-full h-full object-cover" />
                         
                         {/* Selected overlay / indicators */}
                         {isSelected && (

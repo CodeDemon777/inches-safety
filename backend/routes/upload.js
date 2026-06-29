@@ -29,7 +29,9 @@ const router = express.Router();
 router.get('/list', requireAdmin, (req, res) => {
   try {
     const files = fs.readdirSync(uploadDir);
-    const backendUrl = process.env.NODE_ENV === 'production' ? 'https://inches-safety.onrender.com' : 'http://localhost:5000';
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    const host = req.get('host');
+    const backendUrl = `${protocol}://${host}`;
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
     const imageUrls = files
       .filter(file => imageExtensions.includes(path.extname(file).toLowerCase()))
@@ -44,7 +46,9 @@ router.post('/', requireAdmin, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-  const backendUrl = process.env.NODE_ENV === 'production' ? 'https://inches-safety.onrender.com' : 'http://localhost:5000';
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const backendUrl = `${protocol}://${host}`;
   const imageUrl = `${backendUrl}/uploads/${req.file.filename}`;
   res.json({ image_url: imageUrl });
 });
@@ -53,7 +57,9 @@ router.post('/multiple', requireAdmin, upload.array('images', 5), (req, res) => 
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'No files uploaded' });
   }
-  const backendUrl = process.env.NODE_ENV === 'production' ? 'https://inches-safety.onrender.com' : 'http://localhost:5000';
+  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+  const host = req.get('host');
+  const backendUrl = `${protocol}://${host}`;
   const imageUrls = req.files.map(file => `${backendUrl}/uploads/${file.filename}`);
   res.json({ image_urls: imageUrls });
 });
