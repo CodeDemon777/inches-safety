@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound";
 import Reviews from "./pages/Reviews";
 
 import { WhatsAppWidget } from "./components/WhatsAppWidget";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
       <TooltipProvider>
         <Sonner />
         <WhatsAppWidget />
+        <SpeedInsights />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
