@@ -53,7 +53,7 @@ const ProductCard = ({ product }: { product: any }) => {
       id: product._id || product.id,
       name: product.name,
       price: product.price,
-      image: product.image_url || '',
+      image: product.image_url || product.image || '',
       category: product.category,
       sale_type: product.sale_type,
     });
@@ -134,6 +134,8 @@ const ProductCard = ({ product }: { product: any }) => {
           </div>
         ) : product.image_url ? (
           <img src={resolveImageUrl(product.image_url)} alt={product.name} loading="lazy" width={400} height={400} className="h-full w-full object-cover" />
+        ) : product.image ? (
+          <img src={resolveImageUrl(product.image)} alt={product.name} loading="lazy" width={400} height={400} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center">
             <span className="text-4xl text-muted-foreground/30">🌿</span>
