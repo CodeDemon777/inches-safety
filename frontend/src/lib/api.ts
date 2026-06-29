@@ -8,7 +8,8 @@ export const resolveImageUrl = (url: string): string => {
   
   if (cleanUrl.includes('uploads/')) {
     const relativePath = cleanUrl.slice(cleanUrl.indexOf('uploads/'));
-    return `${BACKEND_URL}/${relativePath}`;
+    const baseUrl = BACKEND_URL.replace(/\/api\/?$/, '');
+    return `${baseUrl}/${relativePath}`;
   }
   return cleanUrl;
 };
